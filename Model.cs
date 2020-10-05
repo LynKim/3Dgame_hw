@@ -17,10 +17,10 @@ public class Model : MonoBehaviour {
     SSDirector one;
  
     //以上的向量都是游戏对象的初始位置，以后移动后的位置
-    Vector3 shipStartPos = new Vector3(-2f, -1f, 0);
-    Vector3 shipEndPos = new Vector3(6f, -1f, 0);
-    Vector3 bankStartPos = new Vector3(-10f, -5f, 0);
-    Vector3 bankEndPos = new Vector3(14f, -5f, 0);
+    Vector3 shipStartPos = new Vector3(-3f, -2f, 0);
+    Vector3 shipEndPos = new Vector3(5f, -2f, 0);
+    Vector3 bankStartPos = new Vector3(-9f, -4f, 0);
+    Vector3 bankEndPos = new Vector3(13f, -5f, 0);
  
     float gap = 1.5f;
     Vector3 priestsStartPos = new Vector3(-10.5f, 0.5f, 0);

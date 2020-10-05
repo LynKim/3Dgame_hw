@@ -32,14 +32,14 @@ public class SunRound : MonoBehaviour
 
     // Update is called once per frame
     void Update () {
-        Vector3 a1 = new Vector3 (0, 9, 2);
-        Vector3 a2 = new Vector3 (0, 257, 135);
-        Vector3 a3 = new Vector3 (0, 45, 339);
-        Vector3 a4 = new Vector3 (0, 4, 9);
-        Vector3 a5 = new Vector3 (0, 8, 19);
-        Vector3 a6 = new Vector3 (0, 11, 9);
-        Vector3 a7 = new Vector3 (0, 6, 137);
-        Vector3 a8 = new Vector3 (0, 3, 13);
+        Vector3 a1 = new Vector3 (0, 8, 2);
+        Vector3 a2 = new Vector3 (0, 266, 158);
+        Vector3 a3 = new Vector3 (0, 54, 423);
+        Vector3 a4 = new Vector3 (0, 4, 10);
+        Vector3 a5 = new Vector3 (0, 5, 14);
+        Vector3 a6 = new Vector3 (0, 12, 9);
+        Vector3 a7 = new Vector3 (0, 6, 150);
+        Vector3 a8 = new Vector3 (0, 7, 15);
         
         
         Mercury.RotateAround (Sun.position, a1, 20*Time.deltaTime);
