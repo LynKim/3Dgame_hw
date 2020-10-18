@@ -1,100 +1,136 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using game;
- 
-namespace game
-{
-    public enum State { Start, SE_move, ES_move, End, Win, Lose };
- 
-    public interface UserAction {
-        void priestSOnSide();
-        void priestEOnSide();
-        void devilSOnSide();
-        void devilEOnSide();
-        void moveBoat();
-        void offBoatL();
-        void offBoatR();
-        void reset();
-    }
- 
-    public class SSDirector : System.Object, UserAction
-    {
-        private static SSDirector _instance;
- 
-        public Controller currentScenceController;
-        public State state = State.Start;
-        private Model game_obj;
- 
-        public static SSDirector GetInstance()
-        {
-            if(_instance == null)
-            {
-                _instance = new SSDirector();
-            }
-            return _instance;
-        }
- 
-        public Model getModel()
-        {
-            return game_obj;
-        }
-        
-        internal void setModel(Model someone)
-        {
-            if(game_obj == null)
-            {
-                game_obj = someone;
-            }
-        }
- 
-        public void priestSOnSide()
-        {
-            game_obj.priS();
-        }
-        public void priestEOnSide()
-        {
-            game_obj.priE();
-        }
-        public void devilSOnSide()
-        {
-            game_obj.delS();
-        }
-        public void devilEOnSide()
-        {
-            game_obj.delE();
-        }
-        public void moveBoat()
-        {
-            game_obj.moveBoat();
-        }
-        public void offBoatL()
-        {
-            game_obj.getOffTheBoat(0);
-        }
-        public void offBoatR()
-        {
-            game_obj.getOffTheBoat(1);
-        }
-        public void reset()
-        {
-            game_obj.Reset();
-        }
-    }
- }
- 
-public class Controller : MonoBehaviour {
- 
+using Game;
+
+public class Controller : MonoBehaviour, SceneControl, UserAction {
+
+    private ItemControl[] itemCtrls;
+    public ShoreControl fromShore;
+    public ShoreControl toShore;
+    public BoatControl boat;
+    UserView user;
+
+    private ActionManager MyActionManager; // add in v2
+    
     // Use this for initialization
-    void Start()
-    {
-        SSDirector one = SSDirector.GetInstance();
+	void Start () {
+        Diretor diretor = Diretor.getInstance();
+        diretor.sceneCtrl = this;
+        itemCtrls = new ItemControl[6];
+        LoadPrefabs();
+        user = gameObject.AddComponent<UserView>();
+        user.Restart();
+        MyActionManager = gameObject.AddComponent<ActionManager>() as ActionManager; // add in v2
     }
+	
+	// Update is called once per frame
+	void Update () {
+        
+	}
 
-    // Update is called once per frame
-    void Update()
+    public void LoadPrefabs()
     {
+        GameObject water = (GameObject)Instantiate(Resources.Load("Prefabs/Water", typeof(GameObject)), Vector3.up, Quaternion.identity, null);
+        water.name = "Water";
+        fromShore = new ShoreControl("From");
+        toShore = new ShoreControl("To");
+        boat = new BoatControl();
 
+        for (int i = 0; i < 3; i++)
+        {
+            ItemControl item = new ItemControl("Priest");
+            item.item.name = "Priest" + i;
+            item.item.transform.position = fromShore.GetEmptyPosition();
+            item.GetOnShore(fromShore);
+            fromShore.GetOnShore(item);
+
+            itemCtrls[i] = item;
+        }
+
+        for (int i = 0; i < 3; i++)
+        {
+            ItemControl item = new ItemControl("Devil");
+            item.item.name = "Devil" + i;
+            item.item.transform.position = fromShore.GetEmptyPosition();
+            item.GetOnShore(fromShore);
+            fromShore.GetOnShore(item);
+
+            itemCtrls[i + 3] = item;
+        }
+    }
+    public void BoatMove()
+    {
+        Debug.Log("BoatMove");
+        if (boat.IsEmpty()) return;
+        MyActionManager.MoveBoat(boat); // add in v2
+        user.step++;
+        user.status = Check();
+    }
+    public void ItemClick(ItemControl itemCtrl)
+    {
+        Debug.Log("ItemClick");
+        if (itemCtrl.isOnBoat)
+        {
+            ShoreControl side;
+            if (boat.status == 1) side = fromShore;
+            else side = toShore;
+
+            Debug.Log(side.GetEmptyPosition());
+            boat.GetOffBoat(itemCtrl);
+            MyActionManager.MoveItem(itemCtrl, side.GetEmptyPosition()); // add in v2
+            itemCtrl.GetOnShore(side);
+            side.GetOnShore(itemCtrl);
+            user.step++;
+        }
+        else
+        {
+            if (boat.IsFull()) return;
+
+            Debug.Log(itemCtrl.item.name + " getting on boat");
+            ShoreControl side = itemCtrl.shoreCtrl;
+            if (side.status != boat.status) return;
+
+            side.GetOffShore(itemCtrl.item.name);
+            MyActionManager.MoveItem(itemCtrl, boat.GetOnBoat(itemCtrl)); // add in v2
+            itemCtrl.GetOnBoat(boat);
+            user.step++;
+        }
+        user.status = Check();
+    }
+    public void Restart()
+    {
+        user.Restart();
+        fromShore.Reset();
+        toShore.Reset();
+        boat.Reset();
+        if (boat.status == -1) MyActionManager.MoveBoat(boat);
+        for (int i = 0; i < itemCtrls.Length; i++)
+            itemCtrls[i].Reset();
+    }
+    public int Check()
+    {
+        int from_priest = fromShore.GetItemNum(0);
+        int from_devil = fromShore.GetItemNum(1);
+        int to_priest = toShore.GetItemNum(0);
+        int to_devil = toShore.GetItemNum(1);
+
+        if (boat.status == 1)
+        {
+            from_priest += boat.GetItemNum(0);
+            from_devil += boat.GetItemNum(1);
+        }
+        else
+        {
+            to_priest += boat.GetItemNum(0);
+            to_devil += boat.GetItemNum(1);
+        }
+
+        if (from_priest > 0 && from_priest < from_devil) return 1;
+        if (to_priest > 0 && to_priest < to_devil) return 1;
+        Debug.Log("priest on to shore " + toShore.GetItemNum(0));
+        Debug.Log("devil on to shore " + toShore.GetItemNum(1));
+        if (toShore.GetItemNum(0) + toShore.GetItemNum(1) == 6) return 2;
+        return 0;
     }
 }
-
