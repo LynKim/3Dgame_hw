@@ -1,0 +1,8 @@
+# hw4
+## 牧师与魔鬼 动作分离版 增加裁判类
+重新分了脚本，而这次增加了又动作管理器，将check函数分离出来做成Judge当游戏达到结束条件时，通知场景控制器游戏结束。
+
+ActionBase中实现了动作分离；
+control分为ControllerBase和FirstController，FirstController是负责初始化，ControllerBase负责不同控制器如BoatController，CoastController，CharacterController；view分为UserInterface,UserClick。
+
+**通过脚本添加了背景音乐BackMusic,在maincamera添加了天空盒**
